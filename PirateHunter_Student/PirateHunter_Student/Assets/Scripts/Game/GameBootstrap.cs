@@ -12,6 +12,7 @@ public class GameBootstrap : MonoBehaviour
     [Header("Grafiken")]
     [SerializeField] private Sprite _playerSprite;
     [SerializeField] private Sprite _pirateSprite;
+    [SerializeField] private Sprite[] _pirateSprites;
     [SerializeField] private Sprite _islandSprite;
     [SerializeField] private GameObject _explosionPrefab;
     [SerializeField] private GameObject _bigExplosionPrefab;
@@ -23,6 +24,8 @@ public class GameBootstrap : MonoBehaviour
 
     public const float WorldHalfWidth = 26f;
     public const float WorldHalfHeight = 16f;
+
+    private int _pirateSpriteIndex;
 
     private void Awake()
     {
@@ -140,8 +143,10 @@ public class GameBootstrap : MonoBehaviour
 
     private void BuildPirates()
     {
-        CreatePirate(new Vector2(17f, 2f));
-        CreatePirate(new Vector2(-17f, -2f));
+        // Nah genug an der Startposition, damit die Gegnerschiffe sofort im
+        // Bild sind; die Sichtweite von 9 m wird erst beim Näherkommen erreicht.
+        CreatePirate(new Vector2(9f, 4f));
+        CreatePirate(new Vector2(-9f, 4f));
     }
 
     private void CreatePirate(Vector2 position)
@@ -153,7 +158,7 @@ public class GameBootstrap : MonoBehaviour
         ship.transform.localScale = Vector3.one * 1.7f;
 
         var renderer = ship.AddComponent<SpriteRenderer>();
-        renderer.sprite = _pirateSprite;
+        renderer.sprite = NextPirateSprite();
         renderer.sortingOrder = 4;
 
         var body = ship.AddComponent<Rigidbody2D>();
@@ -165,6 +170,19 @@ public class GameBootstrap : MonoBehaviour
         collider.radius = 0.3f;
 
         ship.AddComponent<ChasingPirate>();
+    }
+
+    /// <summary>Wählt für jedes Piratenschiff ein eigenes Sprite aus dem Sheet.</summary>
+    private Sprite NextPirateSprite()
+    {
+        if (_pirateSprites == null || _pirateSprites.Length == 0)
+        {
+            return _pirateSprite;
+        }
+
+        Sprite sprite = _pirateSprites[_pirateSpriteIndex % _pirateSprites.Length];
+        _pirateSpriteIndex++;
+        return sprite != null ? sprite : _pirateSprite;
     }
 
     /// <summary>Erzeugt die Explosivkanonenkugel des Spielers.</summary>
