@@ -1,0 +1,146 @@
+using UnityEngine;
+
+/// <summary>
+/// Baut die Spielwelt beim Start der Szene auf. In der Szene selbst liegt nur
+/// dieses eine GameObject, damit man alle Gegner, Inseln und Projektile an
+/// einer Stelle im Code findet.
+/// </summary>
+public class GameBootstrap : MonoBehaviour
+{
+    public static GameBootstrap Instance { get; private set; }
+
+    [Header("Grafiken")]
+    [SerializeField] private Sprite _playerSprite;
+    [SerializeField] private Sprite _pirateSprite;
+    [SerializeField] private GameObject _explosionPrefab;
+    [SerializeField] private GameObject _bigExplosionPrefab;
+
+    public Sprite PlayerSprite => _playerSprite;
+    public Sprite PirateSprite => _pirateSprite;
+    public GameObject ExplosionPrefab => _explosionPrefab;
+    public GameObject BigExplosionPrefab => _bigExplosionPrefab;
+
+    public const float WorldHalfWidth = 26f;
+    public const float WorldHalfHeight = 16f;
+
+    private void Awake()
+    {
+        Instance = this;
+        GameSession.Reset();
+
+        BuildPlayer();
+        BuildOceanDecor();
+        BuildBoundaries();
+        SetupCamera();
+
+        gameObject.AddComponent<GameHud>();
+    }
+
+    private void BuildPlayer()
+    {
+        var ship = new GameObject("Player");
+        ship.tag = "Player";
+        ship.layer = GameLayers.Player;
+        ship.transform.position = Vector3.zero;
+        ship.transform.localScale = Vector3.one * 1.6f;
+
+        var renderer = ship.AddComponent<SpriteRenderer>();
+        renderer.sprite = _playerSprite;
+        renderer.sortingOrder = 4;
+
+        var body = ship.AddComponent<Rigidbody2D>();
+        body.gravityScale = 0f;
+        body.freezeRotation = true;
+        body.interpolation = RigidbodyInterpolation2D.Interpolate;
+        body.collisionDetectionMode = CollisionDetectionMode2D.Continuous;
+
+        var collider = ship.AddComponent<CircleCollider2D>();
+        collider.radius = 0.3f;
+
+        ship.AddComponent<PlayerController>();
+        GameSession.Player = ship.transform;
+    }
+
+    private void BuildOceanDecor()
+    {
+        var decor = new GameObject("Ocean").transform;
+        var random = new System.Random(2026);
+
+        for (int i = 0; i < 90; i++)
+        {
+            var wave = new GameObject("Wave");
+            wave.transform.SetParent(decor, false);
+            wave.transform.position = new Vector3(
+                Mathf.Lerp(-WorldHalfWidth + 2f, WorldHalfWidth - 2f, (float)random.NextDouble()),
+                Mathf.Lerp(-WorldHalfHeight + 1f, WorldHalfHeight - 1f, (float)random.NextDouble()),
+                0f);
+            wave.transform.localScale = new Vector3(
+                Mathf.Lerp(0.45f, 1.2f, (float)random.NextDouble()), 1f, 1f);
+
+            var renderer = wave.AddComponent<SpriteRenderer>();
+            renderer.sprite = SpriteFactory.Wave;
+            renderer.sortingOrder = -9;
+            renderer.color = new Color(1f, 1f, 1f, Mathf.Lerp(0.04f, 0.16f, (float)random.NextDouble()));
+        }
+
+        CreateIsland(new Vector2(11f, 7.5f), 3.4f);
+        CreateIsland(new Vector2(-11.5f, 7f), 3.0f);
+        CreateIsland(new Vector2(12f, -8f), 3.2f);
+        CreateIsland(new Vector2(-11f, -7.5f), 3.0f);
+        CreateIsland(new Vector2(0f, 11.5f), 2.6f);
+        CreateIsland(new Vector2(0f, -12.5f), 2.8f);
+    }
+
+    private void CreateIsland(Vector2 position, float scale)
+    {
+        var island = new GameObject("Island");
+        island.transform.position = position;
+        island.transform.localScale = Vector3.one * scale;
+        island.layer = GameLayers.Obstacle;
+
+        var renderer = island.AddComponent<SpriteRenderer>();
+        renderer.sprite = SpriteFactory.Island;
+        renderer.sortingOrder = -5;
+
+        var collider = island.AddComponent<CircleCollider2D>();
+        collider.radius = 0.78f;
+    }
+
+    private void BuildBoundaries()
+    {
+        CreateWall("Boundary West", new Vector2(-WorldHalfWidth - 0.5f, 0f), new Vector2(1f, WorldHalfHeight * 2f + 4f));
+        CreateWall("Boundary East", new Vector2(WorldHalfWidth + 0.5f, 0f), new Vector2(1f, WorldHalfHeight * 2f + 4f));
+        CreateWall("Boundary North", new Vector2(0f, WorldHalfHeight + 0.5f), new Vector2(WorldHalfWidth * 2f + 4f, 1f));
+        CreateWall("Boundary South", new Vector2(0f, -WorldHalfHeight - 0.5f), new Vector2(WorldHalfWidth * 2f + 4f, 1f));
+    }
+
+    private void CreateWall(string name, Vector2 position, Vector2 size)
+    {
+        var wall = new GameObject(name);
+        wall.transform.position = position;
+        wall.layer = GameLayers.Obstacle;
+
+        var collider = wall.AddComponent<BoxCollider2D>();
+        collider.size = size;
+    }
+
+    private void SetupCamera()
+    {
+        var camera = Camera.main;
+        if (camera == null)
+        {
+            return;
+        }
+
+        camera.orthographicSize = 6.2f;
+        camera.backgroundColor = new Color(0.045f, 0.24f, 0.34f, 1f);
+        camera.transform.position = new Vector3(0f, 0f, -10f);
+
+        var follow = camera.GetComponent<CameraFollow>();
+        if (follow == null)
+        {
+            follow = camera.gameObject.AddComponent<CameraFollow>();
+        }
+        follow.SetTarget(GameSession.Player);
+    }
+}
