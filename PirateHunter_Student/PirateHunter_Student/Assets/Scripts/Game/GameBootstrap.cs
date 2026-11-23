@@ -32,6 +32,7 @@ public class GameBootstrap : MonoBehaviour
         BuildOceanDecor();
         BuildBoundaries();
         BuildCannons();
+        BuildPirates();
         SetupCamera();
 
         GameSession.CaptureEnemyCount();
@@ -149,6 +150,36 @@ public class GameBootstrap : MonoBehaviour
 
         var script = projectile.AddComponent<Cannonball>();
         script.Initialize(direction, 7.5f);
+    }
+
+    private void BuildPirates()
+    {
+        CreatePirate(new Vector2(17f, 2f));
+        CreatePirate(new Vector2(-17f, -2f));
+    }
+
+    private void CreatePirate(Vector2 position)
+    {
+        var ship = new GameObject("Pirate Ship");
+        ship.tag = "Enemy";
+        ship.layer = GameLayers.Enemy;
+        ship.transform.position = position;
+        ship.transform.localScale = Vector3.one * 1.7f;
+
+        var renderer = ship.AddComponent<SpriteRenderer>();
+        renderer.sprite = _pirateSprite;
+        renderer.sortingOrder = 4;
+
+        var body = ship.AddComponent<Rigidbody2D>();
+        body.gravityScale = 0f;
+        body.freezeRotation = true;
+        body.interpolation = RigidbodyInterpolation2D.Interpolate;
+        body.collisionDetectionMode = CollisionDetectionMode2D.Continuous;
+
+        var collider = ship.AddComponent<CircleCollider2D>();
+        collider.radius = 0.3f;
+
+        ship.AddComponent<ChasingPirate>();
     }
 
     /// <summary>Erzeugt die Explosivkanonenkugel des Spielers.</summary>
