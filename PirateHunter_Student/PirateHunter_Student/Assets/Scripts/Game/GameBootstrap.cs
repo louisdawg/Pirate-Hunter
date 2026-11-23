@@ -262,7 +262,12 @@ public class GameBootstrap : MonoBehaviour
         GameObject prefab = big ? _bigExplosionPrefab : _explosionPrefab;
         if (prefab != null)
         {
-            Instantiate(prefab, position, Quaternion.identity);
+            var explosion = Instantiate(prefab, position, Quaternion.identity);
+            if (big)
+            {
+                explosion.transform.localScale = prefab.transform.localScale * 4f;
+            }
+
             return;
         }
 
