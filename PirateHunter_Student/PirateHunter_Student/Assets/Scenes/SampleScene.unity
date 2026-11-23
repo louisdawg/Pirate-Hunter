@@ -249,7 +249,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b00757a1e5f14e2c9cd0a1b2c3d4e5f6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _playerSprite: {fileID: -463308086812964116, guid: a5dd2f9b5889ea64fbb53ef9861b077e, type: 3}
-  _pirateSprite: {fileID: 663576582327453874, guid: a5dd2f9b5889ea64fbb53ef9861b077e, type: 3}
+  _playerSprite: {fileID: -6480686583057543155, guid: fda1089deee1e814593dd4d7e90401b9, type: 3}
+  _pirateSprite: {fileID: 663576582327453874, guid: fda1089deee1e814593dd4d7e90401b9, type: 3}
+  _islandSprite: {fileID: 2461891440587676588, guid: a5dd2f9b5889ea64fbb53ef9861b077e, type: 3}
   _explosionPrefab: {fileID: 8832010009395421522, guid: 887647ee0316b284e84fdceaa752093a, type: 3}
   _bigExplosionPrefab: {fileID: 8832010009395421522, guid: 887647ee0316b284e84fdceaa752093a, type: 3}

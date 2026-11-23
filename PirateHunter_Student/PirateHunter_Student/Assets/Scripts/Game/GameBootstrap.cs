@@ -12,6 +12,7 @@ public class GameBootstrap : MonoBehaviour
     [Header("Grafiken")]
     [SerializeField] private Sprite _playerSprite;
     [SerializeField] private Sprite _pirateSprite;
+    [SerializeField] private Sprite _islandSprite;
     [SerializeField] private GameObject _explosionPrefab;
     [SerializeField] private GameObject _bigExplosionPrefab;
 
@@ -29,7 +30,7 @@ public class GameBootstrap : MonoBehaviour
         GameSession.Reset();
 
         BuildPlayer();
-        BuildOceanDecor();
+        BuildIslands();
         BuildBoundaries();
         BuildCannons();
         BuildPirates();
@@ -64,49 +65,31 @@ public class GameBootstrap : MonoBehaviour
         GameSession.Player = ship.transform;
     }
 
-    private void BuildOceanDecor()
+    private void BuildIslands()
     {
-        var decor = new GameObject("Ocean").transform;
-        var random = new System.Random(2026);
-
-        for (int i = 0; i < 90; i++)
-        {
-            var wave = new GameObject("Wave");
-            wave.transform.SetParent(decor, false);
-            wave.transform.position = new Vector3(
-                Mathf.Lerp(-WorldHalfWidth + 2f, WorldHalfWidth - 2f, (float)random.NextDouble()),
-                Mathf.Lerp(-WorldHalfHeight + 1f, WorldHalfHeight - 1f, (float)random.NextDouble()),
-                0f);
-            wave.transform.localScale = new Vector3(
-                Mathf.Lerp(0.45f, 1.2f, (float)random.NextDouble()), 1f, 1f);
-
-            var renderer = wave.AddComponent<SpriteRenderer>();
-            renderer.sprite = SpriteFactory.Wave;
-            renderer.sortingOrder = -9;
-            renderer.color = new Color(1f, 1f, 1f, Mathf.Lerp(0.04f, 0.16f, (float)random.NextDouble()));
-        }
-
-        CreateIsland(new Vector2(11f, 7.5f), 3.4f);
-        CreateIsland(new Vector2(-11.5f, 7f), 3.0f);
-        CreateIsland(new Vector2(12f, -8f), 3.2f);
-        CreateIsland(new Vector2(-11f, -7.5f), 3.0f);
-        CreateIsland(new Vector2(0f, 11.5f), 2.6f);
-        CreateIsland(new Vector2(0f, -12.5f), 2.8f);
+        CreateIsland(new Vector2(-6.2f, -0.4f), 1.8f, 5.2f);
+        CreateIsland(new Vector2(6.2f, -0.4f), 1.8f, 5.2f);
+        CreateIsland(new Vector2(-10.5f, -7.2f), 1.6f, 3.8f);
+        CreateIsland(new Vector2(10.5f, -7.2f), 1.6f, 3.8f);
     }
 
-    private void CreateIsland(Vector2 position, float scale)
+    /// <summary>Platziert eine Kapsel-Insel aus tiles_sheet.png.</summary>
+    private void CreateIsland(Vector2 position, float width, float height)
     {
         var island = new GameObject("Island");
         island.transform.position = position;
-        island.transform.localScale = Vector3.one * scale;
+
+        // Der Kapsel-Sprite ist 44 x 108 Pixel groß; bei 64 PPU entspricht das 0,6875 x 1,6875 Units.
+        island.transform.localScale = new Vector3(width / 0.6875f, height / 1.6875f, 1f);
         island.layer = GameLayers.Obstacle;
 
         var renderer = island.AddComponent<SpriteRenderer>();
-        renderer.sprite = SpriteFactory.Island;
+        renderer.sprite = _islandSprite != null ? _islandSprite : SpriteFactory.Island;
         renderer.sortingOrder = -5;
 
-        var collider = island.AddComponent<CircleCollider2D>();
-        collider.radius = 0.78f;
+        var collider = island.AddComponent<CapsuleCollider2D>();
+        collider.direction = CapsuleDirection2D.Vertical;
+        collider.size = new Vector2(0.6f, 1.55f);
     }
 
     private void BuildCannons()
@@ -217,8 +200,8 @@ public class GameBootstrap : MonoBehaviour
     {
         CreateMine(new Vector2(4.5f, -3f));
         CreateMine(new Vector2(-5f, 2.5f));
-        CreateMine(new Vector2(9f, 1f));
-        CreateMine(new Vector2(-8f, -2.5f));
+        CreateMine(new Vector2(12f, 3f));
+        CreateMine(new Vector2(-12f, 3f));
     }
 
     private void CreateMine(Vector2 position)
@@ -313,7 +296,7 @@ public class GameBootstrap : MonoBehaviour
         }
 
         camera.orthographicSize = 6.2f;
-        camera.backgroundColor = new Color(0.045f, 0.24f, 0.34f, 1f);
+        camera.backgroundColor = new Color(0.12f, 0.44f, 0.56f, 1f);
         camera.transform.position = new Vector3(0f, 0f, -10f);
 
         var follow = camera.GetComponent<CameraFollow>();
