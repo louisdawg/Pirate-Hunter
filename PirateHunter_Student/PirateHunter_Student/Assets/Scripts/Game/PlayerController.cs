@@ -13,12 +13,43 @@ public class PlayerController : MonoBehaviour
     public float reverseSpeed = 3.2f;
     public float turnSpeed = 540f;
 
+    [Header("Waffen")]
+    public float explosiveCooldown = 0.9f;
+
     private Rigidbody2D _body;
     private bool _alive = true;
+    private float _nextExplosiveShot;
 
     private void Awake()
     {
         _body = GetComponent<Rigidbody2D>();
+    }
+
+    private void Update()
+    {
+        if (!_alive || GameSession.IsGameOver)
+        {
+            return;
+        }
+
+        if (Input.GetMouseButtonDown(0) && Time.time >= _nextExplosiveShot)
+        {
+            _nextExplosiveShot = Time.time + explosiveCooldown;
+            FireExplosiveCannonball();
+        }
+    }
+
+    private void FireExplosiveCannonball()
+    {
+        Vector2 direction = (Vector2)GetMousePosition() - (Vector2)transform.position;
+        if (direction.sqrMagnitude < 0.001f)
+        {
+            return;
+        }
+
+        direction.Normalize();
+        Vector2 muzzle = (Vector2)transform.position + direction * 0.85f;
+        GameBootstrap.Instance.SpawnExplosiveCannonball(muzzle, direction);
     }
 
     private void FixedUpdate()

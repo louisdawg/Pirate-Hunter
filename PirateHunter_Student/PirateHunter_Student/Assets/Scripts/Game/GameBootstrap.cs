@@ -151,6 +151,38 @@ public class GameBootstrap : MonoBehaviour
         script.Initialize(direction, 7.5f);
     }
 
+    /// <summary>Erzeugt die Explosivkanonenkugel des Spielers.</summary>
+    public void SpawnExplosiveCannonball(Vector2 position, Vector2 direction)
+    {
+        var projectile = new GameObject("Explosive Cannonball");
+        projectile.transform.position = position;
+        projectile.transform.localScale = Vector3.one * 0.45f;
+
+        var renderer = projectile.AddComponent<SpriteRenderer>();
+        renderer.sprite = SpriteFactory.Circle;
+        renderer.color = new Color(1f, 0.55f, 0.1f);
+        renderer.sortingOrder = 7;
+
+        var glow = new GameObject("Glow");
+        glow.transform.SetParent(projectile.transform, false);
+        glow.transform.localScale = Vector3.one * 2f;
+        var glowRenderer = glow.AddComponent<SpriteRenderer>();
+        glowRenderer.sprite = SpriteFactory.Ring;
+        glowRenderer.color = new Color(1f, 0.35f, 0.1f, 0.5f);
+        glowRenderer.sortingOrder = 6;
+
+        var body = projectile.AddComponent<Rigidbody2D>();
+        body.gravityScale = 0f;
+        body.bodyType = RigidbodyType2D.Kinematic;
+        body.collisionDetectionMode = CollisionDetectionMode2D.Continuous;
+
+        var collider = projectile.AddComponent<CircleCollider2D>();
+        collider.radius = 0.5f;
+        collider.isTrigger = true;
+
+        projectile.AddComponent<ExplosiveCannonball>().Initialize(direction, 9f);
+    }
+
     /// <summary>Spielt das Explosion-Prefab an einer Position ab.</summary>
     public void SpawnExplosion(Vector3 position, bool big = false)
     {

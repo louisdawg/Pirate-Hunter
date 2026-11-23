@@ -56,8 +56,8 @@ public class GameHud : MonoBehaviour
         else
         {
             GUI.Label(
-                new Rect(width * 0.5f - 300f, height - 56f, 600f, 30f),
-                "W / S  fahren     ·     Maus  zielen",
+                new Rect(width * 0.5f - 360f, height - 56f, 720f, 30f),
+                "W / S  fahren     ·     Maus  zielen     ·     LMB  Explosivkanone",
                 _centerSmallStyle);
         }
     }
@@ -65,13 +65,14 @@ public class GameHud : MonoBehaviour
     private void DrawControlPanel()
     {
         GUI.color = Color.white;
-        GUI.DrawTexture(new Rect(28f, 28f, 520f, 208f), _panel);
+        GUI.DrawTexture(new Rect(28f, 28f, 520f, 236f), _panel);
 
         GUI.Label(new Rect(48f, 38f, 480f, 46f), "PIRATE HUNTER", _titleStyle);
         GUI.Label(new Rect(50f, 86f, 480f, 24f), "Raycasts & OverlapCircle", _smallStyle);
 
         GUI.Label(new Rect(48f, 124f, 480f, 26f), "W  /  S      vorwärts / rückwärts", _labelStyle);
         GUI.Label(new Rect(48f, 156f, 480f, 26f), "Maus         Schiff dorthin drehen", _labelStyle);
+        GUI.Label(new Rect(48f, 188f, 480f, 26f), "LMB          Explosivkanone (2 m)", _labelStyle);
     }
 
     private void DrawStatusPanel(float width)
