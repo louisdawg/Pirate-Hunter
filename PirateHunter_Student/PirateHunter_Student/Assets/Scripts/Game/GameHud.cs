@@ -40,7 +40,7 @@ public class GameHud : MonoBehaviour
         string headline = GameSession.HasWon ? "SEE GESICHERT!" : "SCHIFF VERSENKT";
         string hint = GameSession.HasWon
             ? "Alle Ziele wurden zerstört."
-            : "Eine Kanonenkugel hat dein Schiff getroffen.";
+            : "Dein Schiff wurde zerstört.";
 
         GUI.Label(new Rect(0f, height * 0.5f - 110f, width, 70f), headline, _headlineStyle);
         GUI.Label(new Rect(0f, height * 0.5f - 30f, width, 34f), hint, _textStyle);
