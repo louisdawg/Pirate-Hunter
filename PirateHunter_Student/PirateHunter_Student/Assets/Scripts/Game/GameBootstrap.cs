@@ -33,6 +33,7 @@ public class GameBootstrap : MonoBehaviour
         BuildBoundaries();
         BuildCannons();
         BuildPirates();
+        BuildMines();
         SetupCamera();
 
         GameSession.CaptureEnemyCount();
@@ -53,7 +54,6 @@ public class GameBootstrap : MonoBehaviour
 
         var body = ship.AddComponent<Rigidbody2D>();
         body.gravityScale = 0f;
-        body.freezeRotation = true;
         body.interpolation = RigidbodyInterpolation2D.Interpolate;
         body.collisionDetectionMode = CollisionDetectionMode2D.Continuous;
 
@@ -172,7 +172,6 @@ public class GameBootstrap : MonoBehaviour
 
         var body = ship.AddComponent<Rigidbody2D>();
         body.gravityScale = 0f;
-        body.freezeRotation = true;
         body.interpolation = RigidbodyInterpolation2D.Interpolate;
         body.collisionDetectionMode = CollisionDetectionMode2D.Continuous;
 
@@ -214,6 +213,26 @@ public class GameBootstrap : MonoBehaviour
         projectile.AddComponent<ExplosiveCannonball>().Initialize(direction, 9f);
     }
 
+    private void BuildMines()
+    {
+        CreateMine(new Vector2(4.5f, -3f));
+        CreateMine(new Vector2(-5f, 2.5f));
+        CreateMine(new Vector2(9f, 1f));
+        CreateMine(new Vector2(-8f, -2.5f));
+    }
+
+    private void CreateMine(Vector2 position)
+    {
+        var mine = new GameObject("Sea Mine");
+        mine.transform.position = position;
+
+        var collider = mine.AddComponent<CircleCollider2D>();
+        collider.radius = 0.4f;
+        collider.isTrigger = true;
+
+        mine.AddComponent<SeaMine>();
+    }
+
     /// <summary>Erzeugt einen zielsuchenden Torpedo.</summary>
     public void SpawnTorpedo(Vector2 position, Vector2 direction)
     {
@@ -244,7 +263,22 @@ public class GameBootstrap : MonoBehaviour
         if (prefab != null)
         {
             Instantiate(prefab, position, Quaternion.identity);
+            return;
         }
+
+        // Fallback, damit Treffer auch ohne zugewiesenes Prefab sichtbar sind.
+        var burstObject = new GameObject(big ? "BigExplosion" : "Explosion");
+        burstObject.transform.position = position;
+
+        var renderer = burstObject.AddComponent<SpriteRenderer>();
+        renderer.sprite = SpriteFactory.Circle;
+        renderer.sortingOrder = 8;
+
+        var burst = burstObject.AddComponent<ExplosionBurst>();
+        burst.Initialize(
+            new Color(1f, 0.55f, 0.12f, 1f),
+            big ? 1f : 0.5f,
+            big ? 8f : 3f);
     }
 
     private void BuildBoundaries()

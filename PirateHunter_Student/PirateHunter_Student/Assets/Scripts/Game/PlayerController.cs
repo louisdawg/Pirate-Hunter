@@ -96,6 +96,7 @@ public class PlayerController : MonoBehaviour
             float targetAngle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg + 90f;
             float angle = Mathf.MoveTowardsAngle(_body.rotation, targetAngle, turnSpeed * Time.fixedDeltaTime);
             _body.MoveRotation(angle);
+            _body.angularVelocity = 0f;
         }
 
         float input = 0f;

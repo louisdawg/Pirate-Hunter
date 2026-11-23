@@ -251,5 +251,5 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _playerSprite: {fileID: -463308086812964116, guid: a5dd2f9b5889ea64fbb53ef9861b077e, type: 3}
   _pirateSprite: {fileID: 663576582327453874, guid: a5dd2f9b5889ea64fbb53ef9861b077e, type: 3}
-  _explosionPrefab: {fileID: 8832010009395421522, guid: 887647ee0316b284e84fdceaa752093a, type: 3}
-  _bigExplosionPrefab: {fileID: 767739598513311483, guid: 89a7a2f331992cc4e9c76799333d90cd, type: 3}
+  _explosionPrefab: {fileID: 100100000, guid: 887647ee0316b284e84fdceaa752093a, type: 3}
+  _bigExplosionPrefab: {fileID: 100100000, guid: 89a7a2f331992cc4e9c76799333d90cd, type: 3}

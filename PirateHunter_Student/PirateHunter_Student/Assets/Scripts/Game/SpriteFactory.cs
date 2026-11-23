@@ -13,12 +13,52 @@ public static class SpriteFactory
     private static Sprite _ring;
     private static Sprite _circle;
     private static Sprite _torpedo;
+    private static Sprite _mine;
 
     public static Sprite Wave => _wave ??= CreateWave();
     public static Sprite Island => _island ??= CreateIsland();
     public static Sprite Ring => _ring ??= CreateRing(64, 2.5f);
     public static Sprite Circle => _circle ??= CreateCircle(64);
     public static Sprite Torpedo => _torpedo ??= CreateTorpedo();
+    public static Sprite Mine => _mine ??= CreateMine();
+
+    private static Sprite CreateMine()
+    {
+        const int size = 64;
+        var texture = NewTexture(size, size);
+        var pixels = new Color32[size * size];
+
+        var shell = new Color32(52, 62, 72, 255);
+        var rim = new Color32(92, 104, 116, 255);
+        var clear = new Color32(0, 0, 0, 0);
+
+        for (int y = 0; y < size; y++)
+        {
+            for (int x = 0; x < size; x++)
+            {
+                float dx = x - size * 0.5f + 0.5f;
+                float dy = y - size * 0.5f + 0.5f;
+                float angle = Mathf.Atan2(dy, dx);
+                float radius = Mathf.Sqrt(dx * dx + dy * dy);
+
+                float spike = Mathf.Abs(Mathf.Cos(angle * 4f));
+                float edge = 17f + 9f * spike * spike;
+
+                if (radius <= edge)
+                {
+                    pixels[y * size + x] = radius > edge - 3f ? rim : shell;
+                }
+                else
+                {
+                    pixels[y * size + x] = clear;
+                }
+            }
+        }
+
+        texture.SetPixels32(pixels);
+        texture.Apply();
+        return Sprite.Create(texture, new Rect(0f, 0f, size, size), new Vector2(0.5f, 0.5f), PixelsPerUnit);
+    }
 
     private static Sprite CreateTorpedo()
     {
