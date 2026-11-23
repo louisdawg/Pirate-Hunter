@@ -14,6 +14,13 @@ public class GameBootstrap : MonoBehaviour
     [SerializeField] private Sprite _pirateSprite;
     [SerializeField] private Sprite[] _pirateSprites;
     [SerializeField] private Sprite _islandSprite;
+    [Header("Gegner- und Projektil-Grafiken")]
+    [SerializeField] private Sprite _cannonSprite;
+    [SerializeField] private Sprite _cannonballSprite;
+    [SerializeField] private Sprite _explosiveCannonballSprite;
+    [SerializeField] private Sprite _torpedoSprite;
+    [SerializeField] private Sprite _mineSprite;
+    [SerializeField] private Sprite _warningRingSprite;
     [SerializeField] private GameObject _explosionPrefab;
     [SerializeField] private GameObject _bigExplosionPrefab;
 
@@ -110,7 +117,8 @@ public class GameBootstrap : MonoBehaviour
         cannon.layer = GameLayers.Enemy;
         cannon.tag = "Enemy";
         cannon.AddComponent<CircleCollider2D>();
-        cannon.AddComponent<EnemyCannon>().Configure(facing);
+        var enemyCannon = cannon.AddComponent<EnemyCannon>();
+        enemyCannon.Configure(facing, _cannonSprite, _warningRingSprite);
     }
 
     /// <summary>Erzeugt eine feindliche Kanonenkugel, die geradeaus fliegt.</summary>
@@ -118,11 +126,13 @@ public class GameBootstrap : MonoBehaviour
     {
         var projectile = new GameObject("Cannonball");
         projectile.transform.position = position;
-        projectile.transform.localScale = Vector3.one * 0.3f;
+
+        bool artSprite = _cannonballSprite != null;
+        projectile.transform.localScale = Vector3.one * (artSprite ? 1.2f : 0.3f);
 
         var renderer = projectile.AddComponent<SpriteRenderer>();
-        renderer.sprite = SpriteFactory.Circle;
-        renderer.color = new Color(0.12f, 0.12f, 0.15f);
+        renderer.sprite = artSprite ? _cannonballSprite : SpriteFactory.Circle;
+        renderer.color = artSprite ? Color.white : new Color(0.12f, 0.12f, 0.15f);
         renderer.sortingOrder = 7;
 
         var body = projectile.AddComponent<Rigidbody2D>();
@@ -134,7 +144,7 @@ public class GameBootstrap : MonoBehaviour
         body.collisionDetectionMode = CollisionDetectionMode2D.Continuous;
 
         var collider = projectile.AddComponent<CircleCollider2D>();
-        collider.radius = 0.5f;
+        collider.radius = artSprite ? 0.12f : 0.5f;
         collider.isTrigger = true;
 
         var script = projectile.AddComponent<Cannonball>();
@@ -169,7 +179,8 @@ public class GameBootstrap : MonoBehaviour
         var collider = ship.AddComponent<CircleCollider2D>();
         collider.radius = 0.3f;
 
-        ship.AddComponent<ChasingPirate>();
+        var pirate = ship.AddComponent<ChasingPirate>();
+        pirate.SetAlertSprite(_warningRingSprite);
     }
 
     /// <summary>Wählt für jedes Piratenschiff ein eigenes Sprite aus dem Sheet.</summary>
@@ -190,20 +201,14 @@ public class GameBootstrap : MonoBehaviour
     {
         var projectile = new GameObject("Explosive Cannonball");
         projectile.transform.position = position;
-        projectile.transform.localScale = Vector3.one * 0.45f;
+
+        bool artSprite = _explosiveCannonballSprite != null;
+        projectile.transform.localScale = Vector3.one * (artSprite ? 0.75f : 0.45f);
 
         var renderer = projectile.AddComponent<SpriteRenderer>();
-        renderer.sprite = SpriteFactory.Circle;
-        renderer.color = new Color(1f, 0.55f, 0.1f);
+        renderer.sprite = artSprite ? _explosiveCannonballSprite : SpriteFactory.Circle;
+        renderer.color = artSprite ? Color.white : new Color(1f, 0.55f, 0.1f);
         renderer.sortingOrder = 7;
-
-        var glow = new GameObject("Glow");
-        glow.transform.SetParent(projectile.transform, false);
-        glow.transform.localScale = Vector3.one * 2f;
-        var glowRenderer = glow.AddComponent<SpriteRenderer>();
-        glowRenderer.sprite = SpriteFactory.Ring;
-        glowRenderer.color = new Color(1f, 0.35f, 0.1f, 0.5f);
-        glowRenderer.sortingOrder = 6;
 
         var body = projectile.AddComponent<Rigidbody2D>();
         body.gravityScale = 0f;
@@ -212,7 +217,7 @@ public class GameBootstrap : MonoBehaviour
         body.collisionDetectionMode = CollisionDetectionMode2D.Continuous;
 
         var collider = projectile.AddComponent<CircleCollider2D>();
-        collider.radius = 0.5f;
+        collider.radius = artSprite ? 0.3f : 0.5f;
         collider.isTrigger = true;
 
         projectile.AddComponent<ExplosiveCannonball>().Initialize(direction, 9f);
@@ -235,7 +240,8 @@ public class GameBootstrap : MonoBehaviour
         collider.radius = 0.4f;
         collider.isTrigger = true;
 
-        mine.AddComponent<SeaMine>();
+        var seaMine = mine.AddComponent<SeaMine>();
+        seaMine.Initialize(_mineSprite, _warningRingSprite, _cannonballSprite);
     }
 
     /// <summary>Erzeugt einen zielsuchenden Torpedo.</summary>
@@ -246,7 +252,8 @@ public class GameBootstrap : MonoBehaviour
         torpedo.transform.localScale = Vector3.one * 1.1f;
 
         var renderer = torpedo.AddComponent<SpriteRenderer>();
-        renderer.sprite = SpriteFactory.Torpedo;
+        renderer.sprite = _torpedoSprite != null ? _torpedoSprite : SpriteFactory.Torpedo;
+        renderer.color = Color.white;
         renderer.sortingOrder = 7;
 
         var body = torpedo.AddComponent<Rigidbody2D>();

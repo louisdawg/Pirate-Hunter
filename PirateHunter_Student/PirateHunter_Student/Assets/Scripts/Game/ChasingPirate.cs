@@ -3,6 +3,7 @@ using UnityEngine;
 /// <summary>
 /// Piratenschiff: Prüft per Raycast die Line of Sight zum Spieler, verfolgt
 /// ihn, solange er sichtbar ist, und kehrt danach zum Ausgangspunkt zurück.
+/// Der Alarm-Ring ist ein Sprite aus dem Art-Ordner.
 /// </summary>
 [RequireComponent(typeof(Rigidbody2D))]
 public class ChasingPirate : MonoBehaviour
@@ -16,23 +17,13 @@ public class ChasingPirate : MonoBehaviour
     public float turnSpeed = 130f;
 
     private Rigidbody2D _body;
-    private SpriteRenderer _alertRing;
+    private SpriteRenderer _alertMarker;
     private Vector2 _spawnPoint;
 
     private void Awake()
     {
         _body = GetComponent<Rigidbody2D>();
         _spawnPoint = transform.position;
-
-        var ring = new GameObject("AlertRing");
-        ring.transform.SetParent(transform, false);
-        ring.transform.localScale = Vector3.one * 1.5f;
-        _alertRing = ring.AddComponent<SpriteRenderer>();
-        _alertRing.sprite = SpriteFactory.Ring;
-        _alertRing.color = new Color(1f, 0.25f, 0.2f, 0.8f);
-        _alertRing.sortingOrder = 2;
-        _alertRing.enabled = false;
-
         GameSession.RegisterEnemy(gameObject);
     }
 
@@ -41,18 +32,41 @@ public class ChasingPirate : MonoBehaviour
         GameSession.UnregisterEnemy(gameObject);
     }
 
+    /// <summary>Legt das Art-Sprite für den Alarm-Ring über dem Schiff fest.</summary>
+    public void SetAlertSprite(Sprite sprite)
+    {
+        if (sprite == null)
+        {
+            return;
+        }
+
+        if (_alertMarker == null)
+        {
+            var marker = new GameObject("AlertMarker");
+            marker.transform.SetParent(transform, false);
+            marker.transform.localPosition = new Vector3(0f, 0.9f, 0f);
+            marker.transform.localScale = Vector3.one * 1.15f;
+            _alertMarker = marker.AddComponent<SpriteRenderer>();
+            _alertMarker.sortingOrder = 6;
+        }
+
+        _alertMarker.sprite = sprite;
+        _alertMarker.color = new Color(1f, 0.3f, 0.25f, 0.9f);
+        _alertMarker.enabled = false;
+    }
+
     private void FixedUpdate()
     {
         if (GameSession.IsGameOver)
         {
             _body.linearVelocity = Vector2.zero;
-            _alertRing.enabled = false;
+            SetAlert(false);
             return;
         }
 
         if (GameSession.Player == null)
         {
-            _alertRing.enabled = false;
+            SetAlert(false);
             ReturnToStart();
             return;
         }
@@ -79,7 +93,7 @@ public class ChasingPirate : MonoBehaviour
             }
         }
 
-        _alertRing.enabled = seesPlayer;
+        SetAlert(seesPlayer);
 
         if (seesPlayer)
         {
@@ -88,6 +102,14 @@ public class ChasingPirate : MonoBehaviour
         else
         {
             ReturnToStart();
+        }
+    }
+
+    private void SetAlert(bool visible)
+    {
+        if (_alertMarker != null)
+        {
+            _alertMarker.enabled = visible;
         }
     }
 

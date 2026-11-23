@@ -19,10 +19,11 @@ public class Torpedo : MonoBehaviour
     public void Initialize(Vector2 direction)
     {
         _body = GetComponent<Rigidbody2D>();
-        float angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg + 90f;
+        // Das Torpedo-Sprite aus dem Art-Sheet zeigt nach rechts.
+        float angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
         _body.rotation = angle;
 
-        Vector2 nose = Quaternion.Euler(0f, 0f, angle) * Vector2.down;
+        Vector2 nose = Quaternion.Euler(0f, 0f, angle) * Vector2.right;
         _body.linearVelocity = nose * speed;
 
         AcquireTarget();
@@ -46,14 +47,14 @@ public class Torpedo : MonoBehaviour
             Vector2 toTarget = (Vector2)_target.position - (Vector2)transform.position;
             if (toTarget.sqrMagnitude > 0.0001f)
             {
-                float targetAngle = Mathf.Atan2(toTarget.y, toTarget.x) * Mathf.Rad2Deg + 90f;
+                float targetAngle = Mathf.Atan2(toTarget.y, toTarget.x) * Mathf.Rad2Deg;
                 float angle = Mathf.MoveTowardsAngle(_body.rotation, targetAngle, turnSpeed * Time.fixedDeltaTime);
                 _body.MoveRotation(angle);
                 Debug.DrawLine(transform.position, _target.position, new Color(1f, 0.6f, 0.2f));
             }
         }
 
-        Vector2 noseDirection = Quaternion.Euler(0f, 0f, _body.rotation) * Vector2.down;
+        Vector2 noseDirection = Quaternion.Euler(0f, 0f, _body.rotation) * Vector2.right;
         _body.linearVelocity = noseDirection * speed;
     }
 

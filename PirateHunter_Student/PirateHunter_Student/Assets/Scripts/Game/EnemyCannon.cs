@@ -2,8 +2,9 @@ using UnityEngine;
 
 /// <summary>
 /// Feindliche Kanone. Sie prüft per Raycast, ob der Spieler im Sichtbereich
-/// und im Schussfeld ist, richtet das Rohr langsam auf ihn aus und feuert in
-/// festen Abständen Cannonballs ab.
+/// und im Schussfeld ist, richtet sich langsam auf ihn aus und feuert in
+/// festen Abständen Cannonballs ab. Die Kanone und der Warnring sind Sprites
+/// aus dem Art-Ordner.
 /// </summary>
 [RequireComponent(typeof(CircleCollider2D))]
 public class EnemyCannon : MonoBehaviour
@@ -16,22 +17,22 @@ public class EnemyCannon : MonoBehaviour
     [Header("Feuer")]
     public float fireInterval = 1.8f;
 
-    private Transform _barrelPivot;
     private Transform _muzzle;
     private SpriteRenderer _warningRing;
     private Vector2 _idleFacing = Vector2.left;
     private float _nextFireTime;
+    private Sprite _cannonSprite;
+    private Sprite _warningSprite;
 
     private void Awake()
     {
         gameObject.tag = "Enemy";
         gameObject.layer = GameLayers.Enemy;
-        transform.localScale = Vector3.one * 1.25f;
+        transform.localScale = Vector3.one * 1.8f;
 
         var collider = GetComponent<CircleCollider2D>();
-        collider.radius = 0.55f;
+        collider.radius = 0.3f;
 
-        BuildVisuals();
         GameSession.RegisterEnemy(gameObject);
         _nextFireTime = Time.time + 1.2f;
     }
@@ -41,43 +42,42 @@ public class EnemyCannon : MonoBehaviour
         GameSession.UnregisterEnemy(gameObject);
     }
 
-    /// <summary>Legt die Blickrichtung fest, in die die Kanone ohne Ziel zeigt.</summary>
-    public void Configure(Vector2 facing)
+    /// <summary>Setzt Blickrichtung sowie Kanonen- und Warnring-Sprite.</summary>
+    public void Configure(Vector2 facing, Sprite cannonSprite, Sprite warningSprite)
     {
+        _cannonSprite = cannonSprite;
+        _warningSprite = warningSprite;
         _idleFacing = facing.sqrMagnitude > 0.001f ? facing.normalized : Vector2.left;
-        _barrelPivot.rotation = Quaternion.Euler(0f, 0f, Mathf.Atan2(_idleFacing.y, _idleFacing.x) * Mathf.Rad2Deg);
+
+        BuildVisuals();
+        transform.rotation = Quaternion.Euler(
+            0f,
+            0f,
+            Mathf.Atan2(_idleFacing.y, _idleFacing.x) * Mathf.Rad2Deg);
     }
 
     private void BuildVisuals()
     {
-        var baseRenderer = gameObject.AddComponent<SpriteRenderer>();
-        baseRenderer.sprite = SpriteFactory.Circle;
-        baseRenderer.color = new Color(0.28f, 0.34f, 0.4f);
-        baseRenderer.sortingOrder = 3;
-
-        var barrelPivot = new GameObject("BarrelPivot");
-        barrelPivot.transform.SetParent(transform, false);
-        _barrelPivot = barrelPivot.transform;
-
-        var barrel = new GameObject("Barrel");
-        barrel.transform.SetParent(_barrelPivot, false);
-        barrel.transform.localPosition = new Vector3(0.5f, 0f, 0f);
-        barrel.transform.localScale = new Vector3(1.1f, 0.3f, 1f);
-        var barrelRenderer = barrel.AddComponent<SpriteRenderer>();
-        barrelRenderer.sprite = SpriteFactory.Circle;
-        barrelRenderer.color = new Color(0.32f, 0.22f, 0.16f);
-        barrelRenderer.sortingOrder = 5;
+        var renderer = gameObject.AddComponent<SpriteRenderer>();
+        renderer.sprite = _cannonSprite != null ? _cannonSprite : SpriteFactory.Circle;
+        renderer.color = _cannonSprite != null ? Color.white : new Color(0.28f, 0.34f, 0.4f);
+        renderer.sortingOrder = 3;
 
         var muzzle = new GameObject("Muzzle");
-        muzzle.transform.SetParent(_barrelPivot, false);
-        muzzle.transform.localPosition = new Vector3(1.05f, 0f, 0f);
+        muzzle.transform.SetParent(transform, false);
+        muzzle.transform.localPosition = new Vector3(0.3f, 0f, 0f);
         _muzzle = muzzle.transform;
 
         var warning = new GameObject("WarningRing");
         warning.transform.SetParent(transform, false);
-        warning.transform.localScale = Vector3.one * 1.7f;
+
+        // Das Ring-Sprite ist 52 px groß (0,8125 Units bei 64 PPU). Die Kanone
+        // ist auf 1.8 skaliert, daher wird die lokale Ringgröße angepasst.
+        float ringSize = _warningSprite != null ? 0.8125f : 1f;
+        warning.transform.localScale = Vector3.one * (1.9f / (ringSize * 1.8f));
+
         _warningRing = warning.AddComponent<SpriteRenderer>();
-        _warningRing.sprite = SpriteFactory.Ring;
+        _warningRing.sprite = _warningSprite != null ? _warningSprite : SpriteFactory.Ring;
         _warningRing.color = new Color(1f, 0.25f, 0.2f, 0.85f);
         _warningRing.sortingOrder = 2;
         _warningRing.enabled = false;
@@ -87,12 +87,12 @@ public class EnemyCannon : MonoBehaviour
     {
         if (GameSession.IsGameOver || GameSession.Player == null)
         {
-            _warningRing.enabled = false;
-            RotateBarrel(_idleFacing);
+            SetWarning(false);
+            Face(_idleFacing);
             return;
         }
 
-        Vector2 origin = _barrelPivot.position;
+        Vector2 origin = transform.position;
         Vector2 toPlayer = (Vector2)GameSession.Player.position - origin;
         float distance = toPlayer.magnitude;
         if (distance < 0.01f)
@@ -102,7 +102,7 @@ public class EnemyCannon : MonoBehaviour
 
         Vector2 direction = toPlayer / distance;
         bool inRange = distance <= sightRange;
-        bool inFieldOfView = Vector2.Angle(_barrelPivot.right, direction) <= fieldOfView * 0.5f;
+        bool inFieldOfView = Vector2.Angle(transform.right, direction) <= fieldOfView * 0.5f;
 
         // Layermask: Player + Obstacle. Die Kanone selbst liegt auf Enemy und
         // kann deshalb nie vom eigenen Raycast getroffen werden. Inseln
@@ -113,10 +113,10 @@ public class EnemyCannon : MonoBehaviour
         if (seesPlayer)
         {
             Debug.DrawLine(origin, hit.point, Color.magenta);
-            RotateBarrel(direction);
-            _warningRing.enabled = true;
+            Face(direction);
+            SetWarning(true);
 
-            float barrelAngle = _barrelPivot.eulerAngles.z;
+            float barrelAngle = transform.eulerAngles.z;
             float targetAngle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
             bool aligned = Mathf.Abs(Mathf.DeltaAngle(barrelAngle, targetAngle)) < 10f;
 
@@ -128,22 +128,35 @@ public class EnemyCannon : MonoBehaviour
         }
         else
         {
-            _warningRing.enabled = false;
-            RotateBarrel(_idleFacing);
+            SetWarning(false);
+            Face(_idleFacing);
         }
     }
 
-    private void RotateBarrel(Vector2 direction)
+    private void Face(Vector2 direction)
     {
         float targetAngle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
-        _barrelPivot.rotation = Quaternion.RotateTowards(
-            _barrelPivot.rotation,
+        transform.rotation = Quaternion.RotateTowards(
+            transform.rotation,
             Quaternion.Euler(0f, 0f, targetAngle),
             turnSpeed * Time.deltaTime);
     }
 
+    private void SetWarning(bool visible)
+    {
+        if (_warningRing != null)
+        {
+            _warningRing.enabled = visible;
+        }
+    }
+
     private void Fire(Vector2 direction)
     {
+        if (_muzzle == null)
+        {
+            return;
+        }
+
         GameBootstrap.Instance.SpawnCannonball(_muzzle.position, direction);
     }
 }
