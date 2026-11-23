@@ -15,10 +15,12 @@ public class PlayerController : MonoBehaviour
 
     [Header("Waffen")]
     public float explosiveCooldown = 0.9f;
+    public float torpedoCooldown = 1.5f;
 
     private Rigidbody2D _body;
     private bool _alive = true;
     private float _nextExplosiveShot;
+    private float _nextTorpedoShot;
 
     private void Awake()
     {
@@ -37,19 +39,46 @@ public class PlayerController : MonoBehaviour
             _nextExplosiveShot = Time.time + explosiveCooldown;
             FireExplosiveCannonball();
         }
+
+        if (Input.GetMouseButtonDown(1) && Time.time >= _nextTorpedoShot)
+        {
+            _nextTorpedoShot = Time.time + torpedoCooldown;
+            FireTorpedo();
+        }
     }
 
     private void FireExplosiveCannonball()
     {
-        Vector2 direction = (Vector2)GetMousePosition() - (Vector2)transform.position;
-        if (direction.sqrMagnitude < 0.001f)
+        if (!TryGetAimDirection(out Vector2 direction))
         {
             return;
         }
 
-        direction.Normalize();
         Vector2 muzzle = (Vector2)transform.position + direction * 0.85f;
         GameBootstrap.Instance.SpawnExplosiveCannonball(muzzle, direction);
+    }
+
+    private void FireTorpedo()
+    {
+        if (!TryGetAimDirection(out Vector2 direction))
+        {
+            return;
+        }
+
+        Vector2 muzzle = (Vector2)transform.position + direction * 0.9f;
+        GameBootstrap.Instance.SpawnTorpedo(muzzle, direction);
+    }
+
+    private bool TryGetAimDirection(out Vector2 direction)
+    {
+        direction = (Vector2)GetMousePosition() - (Vector2)transform.position;
+        if (direction.sqrMagnitude < 0.001f)
+        {
+            return false;
+        }
+
+        direction.Normalize();
+        return true;
     }
 
     private void FixedUpdate()

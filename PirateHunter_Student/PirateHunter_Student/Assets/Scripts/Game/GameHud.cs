@@ -56,8 +56,8 @@ public class GameHud : MonoBehaviour
         else
         {
             GUI.Label(
-                new Rect(width * 0.5f - 360f, height - 56f, 720f, 30f),
-                "W / S  fahren     ·     Maus  zielen     ·     LMB  Explosivkanone",
+                new Rect(width * 0.5f - 600f, height - 56f, 1200f, 30f),
+                "W / S  fahren   ·   Maus  zielen   ·   LMB  Explosivkanone   ·   RMB  Torpedo",
                 _centerSmallStyle);
         }
     }
@@ -65,7 +65,7 @@ public class GameHud : MonoBehaviour
     private void DrawControlPanel()
     {
         GUI.color = Color.white;
-        GUI.DrawTexture(new Rect(28f, 28f, 520f, 268f), _panel);
+        GUI.DrawTexture(new Rect(28f, 28f, 520f, 300f), _panel);
 
         GUI.Label(new Rect(48f, 38f, 480f, 46f), "PIRATE HUNTER", _titleStyle);
         GUI.Label(new Rect(50f, 86f, 480f, 24f), "Raycasts & OverlapCircle", _smallStyle);
@@ -73,7 +73,8 @@ public class GameHud : MonoBehaviour
         GUI.Label(new Rect(48f, 124f, 480f, 26f), "W  /  S      vorwärts / rückwärts", _labelStyle);
         GUI.Label(new Rect(48f, 156f, 480f, 26f), "Maus         Schiff dorthin drehen", _labelStyle);
         GUI.Label(new Rect(48f, 188f, 480f, 26f), "LMB          Explosivkanone (2 m)", _labelStyle);
-        GUI.Label(new Rect(48f, 220f, 480f, 26f), "Piraten      verfolgen bei Sichtkontakt", _smallStyle);
+        GUI.Label(new Rect(48f, 220f, 480f, 26f), "RMB          Torpedo (zielsuchend)", _labelStyle);
+        GUI.Label(new Rect(48f, 252f, 480f, 26f), "Piraten      verfolgen bei Sichtkontakt", _smallStyle);
     }
 
     private void DrawStatusPanel(float width)

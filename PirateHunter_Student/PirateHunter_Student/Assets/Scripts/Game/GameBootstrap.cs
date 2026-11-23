@@ -214,6 +214,29 @@ public class GameBootstrap : MonoBehaviour
         projectile.AddComponent<ExplosiveCannonball>().Initialize(direction, 9f);
     }
 
+    /// <summary>Erzeugt einen zielsuchenden Torpedo.</summary>
+    public void SpawnTorpedo(Vector2 position, Vector2 direction)
+    {
+        var torpedo = new GameObject("Torpedo");
+        torpedo.transform.position = position;
+        torpedo.transform.localScale = Vector3.one * 1.1f;
+
+        var renderer = torpedo.AddComponent<SpriteRenderer>();
+        renderer.sprite = SpriteFactory.Torpedo;
+        renderer.sortingOrder = 7;
+
+        var body = torpedo.AddComponent<Rigidbody2D>();
+        body.gravityScale = 0f;
+        body.bodyType = RigidbodyType2D.Kinematic;
+        body.collisionDetectionMode = CollisionDetectionMode2D.Continuous;
+
+        var collider = torpedo.AddComponent<CircleCollider2D>();
+        collider.radius = 0.22f;
+        collider.isTrigger = true;
+
+        torpedo.AddComponent<Torpedo>().Initialize(direction);
+    }
+
     /// <summary>Spielt das Explosion-Prefab an einer Position ab.</summary>
     public void SpawnExplosion(Vector3 position, bool big = false)
     {

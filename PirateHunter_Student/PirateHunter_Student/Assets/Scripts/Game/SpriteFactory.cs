@@ -12,11 +12,79 @@ public static class SpriteFactory
     private static Sprite _island;
     private static Sprite _ring;
     private static Sprite _circle;
+    private static Sprite _torpedo;
 
     public static Sprite Wave => _wave ??= CreateWave();
     public static Sprite Island => _island ??= CreateIsland();
     public static Sprite Ring => _ring ??= CreateRing(64, 2.5f);
     public static Sprite Circle => _circle ??= CreateCircle(64);
+    public static Sprite Torpedo => _torpedo ??= CreateTorpedo();
+
+    private static Sprite CreateTorpedo()
+    {
+        const int width = 32;
+        const int height = 64;
+        var texture = NewTexture(width, height);
+        var pixels = new Color32[width * height];
+
+        var body = new Color32(70, 82, 94, 255);
+        var highlight = new Color32(140, 155, 168, 255);
+        var nose = new Color32(225, 85, 60, 255);
+        var fin = new Color32(55, 65, 75, 255);
+        var clear = new Color32(0, 0, 0, 0);
+
+        for (int y = 0; y < height; y++)
+        {
+            for (int x = 0; x < width; x++)
+            {
+                int halfWidth;
+                if (y < 4 || y > 59)
+                {
+                    pixels[y * width + x] = clear;
+                    continue;
+                }
+
+                if (y < 22)
+                {
+                    halfWidth = Mathf.RoundToInt(Mathf.Lerp(2f, 8f, (y - 4f) / 18f));
+                }
+                else if (y > 48)
+                {
+                    halfWidth = Mathf.RoundToInt(Mathf.Lerp(8f, 4f, (y - 48f) / 11f));
+                }
+                else
+                {
+                    halfWidth = 8;
+                }
+
+                if (Mathf.Abs(x - width * 0.5f) > halfWidth)
+                {
+                    pixels[y * width + x] = clear;
+                    continue;
+                }
+
+                Color32 color = body;
+                if (y < 22)
+                {
+                    color = nose;
+                }
+                else if (y > 48)
+                {
+                    color = fin;
+                }
+                else if (x > 10 && x < 14)
+                {
+                    color = highlight;
+                }
+
+                pixels[y * width + x] = color;
+            }
+        }
+
+        texture.SetPixels32(pixels);
+        texture.Apply();
+        return Sprite.Create(texture, new Rect(0f, 0f, width, height), new Vector2(0.5f, 0.5f), PixelsPerUnit);
+    }
 
     private static Sprite CreateCircle(int size)
     {
