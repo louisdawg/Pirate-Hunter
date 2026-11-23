@@ -125,6 +125,9 @@ public class GameBootstrap : MonoBehaviour
         var body = projectile.AddComponent<Rigidbody2D>();
         body.gravityScale = 0f;
         body.bodyType = RigidbodyType2D.Kinematic;
+        // Ohne diese Option meldet ein kinematischer Trigger keine Treffer an
+        // statischen Collidern (Inseln, Kanonen), sondern fliegt hindurch.
+        body.useFullKinematicContacts = true;
         body.collisionDetectionMode = CollisionDetectionMode2D.Continuous;
 
         var collider = projectile.AddComponent<CircleCollider2D>();
@@ -187,6 +190,7 @@ public class GameBootstrap : MonoBehaviour
         var body = projectile.AddComponent<Rigidbody2D>();
         body.gravityScale = 0f;
         body.bodyType = RigidbodyType2D.Kinematic;
+        body.useFullKinematicContacts = true;
         body.collisionDetectionMode = CollisionDetectionMode2D.Continuous;
 
         var collider = projectile.AddComponent<CircleCollider2D>();
@@ -230,6 +234,7 @@ public class GameBootstrap : MonoBehaviour
         var body = torpedo.AddComponent<Rigidbody2D>();
         body.gravityScale = 0f;
         body.bodyType = RigidbodyType2D.Kinematic;
+        body.useFullKinematicContacts = true;
         body.collisionDetectionMode = CollisionDetectionMode2D.Continuous;
 
         var collider = torpedo.AddComponent<CircleCollider2D>();
