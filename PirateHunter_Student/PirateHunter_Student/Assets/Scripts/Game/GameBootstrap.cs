@@ -31,8 +31,10 @@ public class GameBootstrap : MonoBehaviour
         BuildPlayer();
         BuildOceanDecor();
         BuildBoundaries();
+        BuildCannons();
         SetupCamera();
 
+        GameSession.CaptureEnemyCount();
         gameObject.AddComponent<GameHud>();
     }
 
@@ -104,6 +106,59 @@ public class GameBootstrap : MonoBehaviour
 
         var collider = island.AddComponent<CircleCollider2D>();
         collider.radius = 0.78f;
+    }
+
+    private void BuildCannons()
+    {
+        CreateCannon(new Vector2(6.5f, 5.5f), Vector2.left);
+        CreateCannon(new Vector2(-6.5f, 6f), Vector2.right);
+        CreateCannon(new Vector2(7.5f, -6f), Vector2.left);
+        CreateCannon(new Vector2(-7f, -6f), Vector2.right);
+    }
+
+    private void CreateCannon(Vector2 position, Vector2 facing)
+    {
+        var cannon = new GameObject("Enemy Cannon");
+        cannon.transform.position = position;
+        cannon.layer = GameLayers.Enemy;
+        cannon.tag = "Enemy";
+        cannon.AddComponent<CircleCollider2D>();
+        cannon.AddComponent<EnemyCannon>().Configure(facing);
+    }
+
+    /// <summary>Erzeugt eine feindliche Kanonenkugel, die geradeaus fliegt.</summary>
+    public void SpawnCannonball(Vector2 position, Vector2 direction)
+    {
+        var projectile = new GameObject("Cannonball");
+        projectile.transform.position = position;
+        projectile.transform.localScale = Vector3.one * 0.3f;
+
+        var renderer = projectile.AddComponent<SpriteRenderer>();
+        renderer.sprite = SpriteFactory.Circle;
+        renderer.color = new Color(0.12f, 0.12f, 0.15f);
+        renderer.sortingOrder = 7;
+
+        var body = projectile.AddComponent<Rigidbody2D>();
+        body.gravityScale = 0f;
+        body.bodyType = RigidbodyType2D.Kinematic;
+        body.collisionDetectionMode = CollisionDetectionMode2D.Continuous;
+
+        var collider = projectile.AddComponent<CircleCollider2D>();
+        collider.radius = 0.5f;
+        collider.isTrigger = true;
+
+        var script = projectile.AddComponent<Cannonball>();
+        script.Initialize(direction, 7.5f);
+    }
+
+    /// <summary>Spielt das Explosion-Prefab an einer Position ab.</summary>
+    public void SpawnExplosion(Vector3 position, bool big = false)
+    {
+        GameObject prefab = big ? _bigExplosionPrefab : _explosionPrefab;
+        if (prefab != null)
+        {
+            Instantiate(prefab, position, Quaternion.identity);
+        }
     }
 
     private void BuildBoundaries()

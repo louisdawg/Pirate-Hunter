@@ -11,10 +11,34 @@ public static class SpriteFactory
     private static Sprite _wave;
     private static Sprite _island;
     private static Sprite _ring;
+    private static Sprite _circle;
 
     public static Sprite Wave => _wave ??= CreateWave();
     public static Sprite Island => _island ??= CreateIsland();
     public static Sprite Ring => _ring ??= CreateRing(64, 2.5f);
+    public static Sprite Circle => _circle ??= CreateCircle(64);
+
+    private static Sprite CreateCircle(int size)
+    {
+        var texture = NewTexture(size, size);
+        var pixels = new Color32[size * size];
+        Vector2 center = new Vector2(size * 0.5f, size * 0.5f);
+        float radius = size * 0.5f - 1f;
+
+        for (int y = 0; y < size; y++)
+        {
+            for (int x = 0; x < size; x++)
+            {
+                float distance = Vector2.Distance(new Vector2(x + 0.5f, y + 0.5f), center);
+                float alpha = Mathf.Clamp01(radius - distance + 0.5f);
+                pixels[y * size + x] = new Color32(255, 255, 255, (byte)(alpha * 255f));
+            }
+        }
+
+        texture.SetPixels32(pixels);
+        texture.Apply();
+        return Sprite.Create(texture, new Rect(0f, 0f, size, size), new Vector2(0.5f, 0.5f), PixelsPerUnit);
+    }
 
     private static Sprite CreateWave()
     {

@@ -53,6 +53,35 @@ public class PlayerController : MonoBehaviour
         _body.linearVelocity = forward * (input * speed);
     }
 
+    /// <summary>Wird von feindlichen Treffern aufgerufen.</summary>
+    public void Die()
+    {
+        if (!_alive)
+        {
+            return;
+        }
+
+        _alive = false;
+        _body.linearVelocity = Vector2.zero;
+
+        var collider = GetComponent<Collider2D>();
+        if (collider != null)
+        {
+            collider.enabled = false;
+        }
+
+        var renderer = GetComponent<SpriteRenderer>();
+        if (renderer != null)
+        {
+            renderer.enabled = false;
+        }
+
+        GameSession.Player = null;
+        GameSession.TriggerGameOver();
+        GameBootstrap.Instance.SpawnExplosion(transform.position);
+        Destroy(gameObject, 0.05f);
+    }
+
     private Vector3 GetMousePosition()
     {
         Vector3 mouseScreenPos = Input.mousePosition;
